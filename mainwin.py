@@ -3,6 +3,9 @@ import tkinter.ttk as ttk
 from glob import glob
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showerror
+from PIL import Image
+from PIL import ImageTk
+from PIL import ImageOps
 
 class MainWin(object):
     def __init__(self):
@@ -10,13 +13,37 @@ class MainWin(object):
         self.name_fails: list[str] = []
         self.name_wins: list[str] = []
         self.image_paths: list[str] = []
-        current_image: int = 0
-
-        self.win: tk.Tk = tk.Tk()
-        self.mainframe: ttk.Frame = ttk.Frame(self.win)
+        self.current_image_index: int = 0
         self.image_directory_path: str = str()
 
-        # init game
+        self.win: tk.Tk = tk.Tk()
+
+        self.mainframe: ttk.Frame = ttk.Frame(self.win)
+        self.mainframe.pack()
+
+        # init the frame containing the buttons
+        self.buttonframe: ttk.Frame = ttk.Frame(self.mainframe)
+        self.buttonframe.pack()
+        self.openbutton: ttk.Button = ttk.Button(master=self.buttonframe, text='Öppna', command=self.open_image_dir)
+        self.openbutton.pack(side=tk.LEFT)
+        self.submitbutton: ttk.Button = ttk.Button(master=self.buttonframe, text='Klar')
+        self.submitbutton.pack(side=tk.RIGHT)
+
+        # init the frame containing the image
+        self.imageframe: ttk.Frame = ttk.Frame(self.mainframe)
+        self.imageframe.pack()
+        self.img = Image.open(fp='empty.jpg')
+        self.photoimage = ImageTk.PhotoImage(image=ImageOps.contain(self.img, (500,500)))
+        self.imagelabel: ttk.Label = ttk.Label(master=self.imageframe, image=self.photoimage)
+        self.imagelabel.pack()
+
+        self.nameframe: ttk.Frame = ttk.Frame(self.mainframe)
+        self.nameframe.pack()
+        self.namevar: tk.StringVar = tk.StringVar(master=self.nameframe, value='Inget namn')
+        self.nameentry: ttk.Entry = ttk.Entry(master=self.nameframe)
+        self.nameentry.pack(side=tk.BOTTOM)
+
+        self.win.mainloop()
 
     def diplay_next_image(self):
         pass
@@ -38,7 +65,7 @@ class MainWin(object):
             showerror(title='Fel', message='Hittade inte några bilder i mappen.')
         else:
             for imgpath in imgpaths:
-                self.images.append(imgpath)
+                self.image_paths.append(imgpath)
 
     def extract_name_from_path(self, imgpath: str):
         if '/' in imgpath:
@@ -64,3 +91,5 @@ class MainWin(object):
     def restart_game(self):
         pass
 
+if __name__ == '__main__':
+    mw = MainWin()
