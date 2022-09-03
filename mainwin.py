@@ -15,11 +15,11 @@ class MainWin(object):
         # CONSTANTS
         self.IMAGE_SIZE = (500, 500)
 
-        self.NORMAL_STYLE = Style(self.win)
-        self.NORMAL_STYLE.configure('NORMAL.TEntry', bg='white', fg='black')
+        # self.NORMAL_STYLE = Style(self.win)
+        # self.NORMAL_STYLE.configure('NORMAL.TEntry', bg='white', fg='black')
 
-        self.WRONG_STYLE = Style(self.win)
-        self.WRONG_STYLE.configure('WRONG.TEntry', bg='orange', fg='white')
+        # self.WRONG_STYLE = Style(self.win)
+        # self.WRONG_STYLE.configure('WRONG.TEntry', bg='orange', fg='white')
 
         self.name_fails: list[str] = []
         self.name_wins: list[str] = []
@@ -52,7 +52,7 @@ class MainWin(object):
         self.nameframe: Frame = Frame(self.mainframe)
         self.nameframe.pack()
         self.namevar: StringVar = StringVar(master=self.nameframe, value='Inget namn')
-        self.nameentry: Entry = Entry(master=self.nameframe, style='NORMAL.TEntry')
+        self.nameentry: Entry = Entry(master=self.nameframe, style='NORMAL.TEntry', textvariable=self.namevar)
         self.nameentry.pack(side=BOTTOM)
 
         self.win.mainloop()
@@ -77,7 +77,14 @@ class MainWin(object):
     def open_image_dir(self):
         imgdirpath = askdirectory()
         if imgdirpath is not None and imgdirpath != "":
+            print(f'Setting image directory to {imgdirpath}')
             self.image_directory_path = imgdirpath
+            self.current_image_index = 0
+            self.prepare_image_paths()
+            # display the first image
+            self.img = Image.open(self.image_paths[0])
+            self.photoimage = ImageTk.PhotoImage(self.img)
+            self.imagelabel.config(image=self.photoimage)
 
     def prepare_image_paths(self):
         if self.image_directory_path != "":
@@ -86,11 +93,15 @@ class MainWin(object):
             showerror(title='Fel', message='Ingen mapp är vald.')
         print('Searching for ' + self.image_directory_path + '/*.jpg')
         imgpaths = glob(self.image_directory_path + '/*.jpg') + glob(self.image_directory_path + '/*.jpeg')
+        print('Found images:')
+        for imgp in imgpaths:
+            print(imgp)
 
         if len(imgpaths) == 0:
             showerror(title='Fel', message='Hittade inte några bilder i mappen.')
         else:
             random.shuffle(imgpaths)
+            self.image_paths = imgpaths
 
     def extract_name_from_path(self, imgpath: str):
         if '/' in imgpath:
