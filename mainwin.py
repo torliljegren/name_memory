@@ -1,52 +1,78 @@
-import tkinter as tk
-import tkinter.ttk as ttk
+import time
+import random
 from glob import glob
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showerror
-from PIL import Image
-from PIL import ImageTk
-from PIL import ImageOps
+from PIL import Image, ImageTk, ImageOps
+from tkinter import Tk, LEFT, RIGHT, BOTTOM, StringVar
+from tkinter.ttk import Frame, Label, Button, Style, Entry
+
 
 class MainWin(object):
     def __init__(self):
-        self.names: list[str] = []
+        self.win = Tk()
+
+        # CONSTANTS
+        self.IMAGE_SIZE = (500, 500)
+
+        self.NORMAL_STYLE = Style(self.win)
+        self.NORMAL_STYLE.configure('NORMAL.TEntry', bg='white', fg='black')
+
+        self.WRONG_STYLE = Style(self.win)
+        self.WRONG_STYLE.configure('WRONG.TEntry', bg='orange', fg='white')
+
         self.name_fails: list[str] = []
         self.name_wins: list[str] = []
         self.image_paths: list[str] = []
         self.current_image_index: int = 0
         self.image_directory_path: str = str()
 
-        self.win: tk.Tk = tk.Tk()
-
-        self.mainframe: ttk.Frame = ttk.Frame(self.win)
+        self.mainframe: Frame = Frame(self.win)
         self.mainframe.pack()
 
         # init the frame containing the buttons
-        self.buttonframe: ttk.Frame = ttk.Frame(self.mainframe)
+        self.buttonframe: Frame = Frame(self.mainframe)
         self.buttonframe.pack()
-        self.openbutton: ttk.Button = ttk.Button(master=self.buttonframe, text='Öppna', command=self.open_image_dir)
-        self.openbutton.pack(side=tk.LEFT)
-        self.submitbutton: ttk.Button = ttk.Button(master=self.buttonframe, text='Klar')
-        self.submitbutton.pack(side=tk.RIGHT)
+        self.openbutton: Button = Button(master=self.buttonframe, text='Öppna', command=self.open_image_dir)
+        self.openbutton.pack(side=LEFT)
+        self.submitbutton: Button = Button(master=self.buttonframe, text='Klar')
+        self.submitbutton.pack(side=RIGHT)
+        self.submitbutton.bind('<Return>', lambda e:self.ok_action())
 
         # init the frame containing the image
-        self.imageframe: ttk.Frame = ttk.Frame(self.mainframe)
+        self.imageframe: Frame = Frame(self.mainframe)
         self.imageframe.pack()
-        self.img = Image.open(fp='empty.jpg')
-        self.photoimage = ImageTk.PhotoImage(image=ImageOps.contain(self.img, (500,500)))
-        self.imagelabel: ttk.Label = ttk.Label(master=self.imageframe, image=self.photoimage)
+        # create a image and set it to the default image
+        self.img = Image.open('empty.jpg')
+        self.img = ImageOps.contain(self.img, self.IMAGE_SIZE)
+        self.photoimage = ImageTk.PhotoImage(image=self.img)
+        self.imagelabel = Label(master=self.imageframe, image=self.photoimage)
         self.imagelabel.pack()
 
-        self.nameframe: ttk.Frame = ttk.Frame(self.mainframe)
+        self.nameframe: Frame = Frame(self.mainframe)
         self.nameframe.pack()
-        self.namevar: tk.StringVar = tk.StringVar(master=self.nameframe, value='Inget namn')
-        self.nameentry: ttk.Entry = ttk.Entry(master=self.nameframe)
-        self.nameentry.pack(side=tk.BOTTOM)
+        self.namevar: StringVar = StringVar(master=self.nameframe, value='Inget namn')
+        self.nameentry: Entry = Entry(master=self.nameframe, style='NORMAL.TEntry')
+        self.nameentry.pack(side=BOTTOM)
 
         self.win.mainloop()
 
+    def display_default_image(self):
+        self.img = Image.open('empty.jpg')
+        self.photoimage = ImageTk.PhotoImage(image=ImageOps.contain(self.img, self.IMAGE_SIZE))
+        self.imagelabel.config(image=self.photoimage)
+
     def diplay_next_image(self):
-        pass
+        try:
+            self.img = Image.open(self.image_paths[self.current_image_index+1])
+        except FileNotFoundError:
+            self.display_default_image()
+            return
+
+        self.current_image_index += 1
+        self.photoimage = ImageTk.PhotoImage(image=self.img)
+        self.imagelabel.config(image=self.photoimage)
+
 
     def open_image_dir(self):
         imgdirpath = askdirectory()
@@ -58,32 +84,46 @@ class MainWin(object):
             pass
         else:
             showerror(title='Fel', message='Ingen mapp är vald.')
-
-        imgpaths = glob(self.image_directory_path + '/.jpg') + glob(self.image_directory_path + '/.jpeg')
+        print('Searching for ' + self.image_directory_path + '/*.jpg')
+        imgpaths = glob(self.image_directory_path + '/*.jpg') + glob(self.image_directory_path + '/*.jpeg')
 
         if len(imgpaths) == 0:
             showerror(title='Fel', message='Hittade inte några bilder i mappen.')
         else:
-            for imgpath in imgpaths:
-                self.image_paths.append(imgpath)
+            random.shuffle(imgpaths)
 
     def extract_name_from_path(self, imgpath: str):
         if '/' in imgpath:
             return imgpath.split('/')[-1]
+        elif '\\' in imgpath:
+            return imgpath.split('\\')[-1]
         else:
-            return str()
+            return imgpath
 
     def ok_action(self):
-        pass
+        if len(self.image_paths) == 0 or len(self.namevar.get()) == 0:
+            return
 
-    def verify_name(self):
-        pass
+        if self.verify_name():
+            self.name_win()
+        else:
+            self.name_fail()
+
+    def verify_name(self) -> bool:
+        return self.namevar.get().lower() == \
+               self.extract_name_from_path(self.image_paths[self.current_image_index]).lower()
 
     def name_fail(self):
-        pass
+        self.namevar.set('Fel')
+        self.nameentry.config(style='WRONG.TEntry')
+        self.name_fails.append(self.extract_name_from_path(self.image_paths[self.current_image_index]))
 
     def name_win(self):
-        pass
+        self.namevar.set('Korrekt')
+        time.sleep(0.5)
+        self.nameentry.config(style='NORMAL.TEntry')
+        self.name_wins.append(self.extract_name_from_path(self.image_paths[self.current_image_index]))
+        self.diplay_next_image()
 
     def game_over(self):
         pass
