@@ -4,7 +4,7 @@ from glob import glob
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showerror
 from PIL import Image, ImageTk, ImageOps
-from tkinter import Tk, LEFT, RIGHT, BOTTOM, StringVar
+from tkinter import Tk, LEFT, RIGHT, BOTTOM, StringVar, END
 from tkinter.ttk import Frame, Label, Button, Style, Entry
 
 
@@ -35,9 +35,9 @@ class MainWin(object):
         self.buttonframe.pack()
         self.openbutton: Button = Button(master=self.buttonframe, text='Öppna', command=self.open_image_dir)
         self.openbutton.pack(side=LEFT)
-        self.submitbutton: Button = Button(master=self.buttonframe, text='Klar')
+        self.submitbutton: Button = Button(master=self.buttonframe, text='Klar', command=self.ok_action)
         self.submitbutton.pack(side=RIGHT)
-        self.submitbutton.bind('<Return>', lambda e:self.ok_action())
+        self.win.bind('<Return>', lambda e:self.ok_action())
 
         # init the frame containing the image
         self.imageframe: Frame = Frame(self.mainframe)
@@ -74,28 +74,32 @@ class MainWin(object):
         self.imagelabel.config(image=self.photoimage)
 
 
-    def open_image_dir(self):
-        imgdirpath = askdirectory()
-        if imgdirpath is not None and imgdirpath != "":
-            print(f'Setting image directory to {imgdirpath}')
-            self.image_directory_path = imgdirpath
+    def open_image_dir(self, imgdir=None):
+        if imgdir is None:
+            imgdir = askdirectory()
+
+        if imgdir is not None and imgdir != "":
+            print(f'Setting image directory to {imgdir}')
+            self.image_directory_path = imgdir
             self.current_image_index = 0
             self.prepare_image_paths()
             # display the first image
             self.img = Image.open(self.image_paths[0])
             self.photoimage = ImageTk.PhotoImage(self.img)
             self.imagelabel.config(image=self.photoimage)
+            self.namevar.set('')
+            self.nameentry.focus_set()
 
     def prepare_image_paths(self):
-        if self.image_directory_path != "":
-            pass
-        else:
+        if self.image_directory_path == "":
             showerror(title='Fel', message='Ingen mapp är vald.')
+
         print('Searching for ' + self.image_directory_path + '/*.jpg')
         imgpaths = glob(self.image_directory_path + '/*.jpg') + glob(self.image_directory_path + '/*.jpeg')
         print('Found images:')
+        i = 0
         for imgp in imgpaths:
-            print(imgp)
+            print(f'{imgp}   with name: {self.extract_name_from_path(imgp)}')
 
         if len(imgpaths) == 0:
             showerror(title='Fel', message='Hittade inte några bilder i mappen.')
@@ -105,33 +109,47 @@ class MainWin(object):
 
     def extract_name_from_path(self, imgpath: str):
         if '/' in imgpath:
-            return imgpath.split('/')[-1]
+            return imgpath.split('/')[-1].split('.')[0]
         elif '\\' in imgpath:
-            return imgpath.split('\\')[-1]
+            return imgpath.split('\\')[-1].split('.')[0]
         else:
-            return imgpath
+            return imgpath.split('.')[0]
 
     def ok_action(self):
-        if len(self.image_paths) == 0 or len(self.namevar.get()) == 0:
+        if len(self.image_paths) == 0:
+            print('No image dir set')
+            return
+        elif len(self.namevar.get()) == 0:
+            print('Text entry is empty')
             return
 
+        print('Verifying name')
+        print(f'Correct name: {self.current_correct_name()}  Guess: {self.namevar.get()}')
         if self.verify_name():
+            print('Correct guess')
             self.name_win()
         else:
+            print('Wrong guess')
             self.name_fail()
+
+    def current_correct_name(self):
+        return self.extract_name_from_path(self.image_paths[self.current_image_index])
 
     def verify_name(self) -> bool:
         return self.namevar.get().lower() == \
                self.extract_name_from_path(self.image_paths[self.current_image_index]).lower()
 
     def name_fail(self):
-        self.namevar.set('Fel')
+        self.namevar.set('FEL')
+        self.nameentry.select_range(0,END)
+        self.nameentry.focus_set()
         self.nameentry.config(style='WRONG.TEntry')
         self.name_fails.append(self.extract_name_from_path(self.image_paths[self.current_image_index]))
 
     def name_win(self):
-        self.namevar.set('Korrekt')
-        time.sleep(0.5)
+        self.namevar.set('RÄTT')
+        self.nameentry.select_range(0,END)
+        self.nameentry.focus_set()
         self.nameentry.config(style='NORMAL.TEntry')
         self.name_wins.append(self.extract_name_from_path(self.image_paths[self.current_image_index]))
         self.diplay_next_image()
