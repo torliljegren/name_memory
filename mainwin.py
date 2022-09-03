@@ -1,11 +1,12 @@
-import time
 import random
+import time
 from glob import glob
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showerror, showinfo
 from PIL import Image, ImageTk, ImageOps
 from tkinter import Tk, LEFT, RIGHT, BOTTOM, StringVar, END
 from tkinter.ttk import Frame, Label, Button, Style, Entry
+from statwin import StatWin
 
 
 class MainWin(object):
@@ -16,7 +17,7 @@ class MainWin(object):
         # CONSTANTS
         self.IMAGE_SIZE = (500, 500)
 
-        # self.NORMAL_STYLE = Style(self.win)
+        # self.NORMAL_STYLE = Style(master=self.win)
         # self.NORMAL_STYLE.configure('NORMAL.TEntry', bg='white', fg='black')
 
         # self.WRONG_STYLE = Style(self.win)
@@ -38,7 +39,7 @@ class MainWin(object):
         self.openbutton.pack(side=LEFT)
         self.submitbutton: Button = Button(master=self.buttonframe, text='Klar', command=self.ok_action)
         self.submitbutton.pack(side=RIGHT)
-        self.win.bind('<Return>', lambda e:self.ok_action())
+        self.win.bind('<Return>', lambda e: self.ok_action())
 
         # init the frame containing the image
         self.imageframe: Frame = Frame(self.mainframe)
@@ -65,7 +66,8 @@ class MainWin(object):
 
     def diplay_next_image(self):
         if self.current_image_index >= len(self.image_paths)-1:
-            showinfo('Klar', 'Nu har du gissat klart.')
+            # showinfo('Klar', 'Nu har du gissat klart.')
+            self.game_over()
             return
 
         try:
@@ -102,7 +104,6 @@ class MainWin(object):
         print('Searching for ' + self.image_directory_path + '/*.jpg')
         imgpaths = glob(self.image_directory_path + '/*.jpg') + glob(self.image_directory_path + '/*.jpeg')
         print('Found images:')
-        i = 0
         for imgp in imgpaths:
             print(f'{imgp}   with name: {self.extract_name_from_path(imgp)}')
 
@@ -114,9 +115,9 @@ class MainWin(object):
 
     def extract_name_from_path(self, imgpath: str):
         if '/' in imgpath:
-            return imgpath.split('/')[-1].split('.')[0]
+            return imgpath.split('/')[-1].split('.')[0].split(' ')[0]
         elif '\\' in imgpath:
-            return imgpath.split('\\')[-1].split('.')[0]
+            return imgpath.split('\\')[-1].split('.')[0].split(' ')[0]
         else:
             return imgpath.split('.')[0]
 
@@ -137,7 +138,7 @@ class MainWin(object):
             print('Wrong guess')
             self.name_fail()
 
-    def current_correct_name(self):
+    def current_correct_name(self) -> str:
         return self.extract_name_from_path(self.image_paths[self.current_image_index])
 
     def verify_name(self) -> bool:
@@ -146,24 +147,29 @@ class MainWin(object):
 
     def name_fail(self):
         self.namevar.set('FEL')
-        self.nameentry.select_range(0,END)
+        time.sleep(0.5)
+        self.namevar.set(self.extract_name_from_path(self.image_paths[self.current_image_index]))
+        self.nameentry.select_range(0, END)
         self.nameentry.focus_set()
         self.nameentry.config(style='WRONG.TEntry')
-        self.name_fails.append(self.extract_name_from_path(self.image_paths[self.current_image_index]))
+        self.name_fails.append(self.image_paths[self.current_image_index])
 
     def name_win(self):
         self.namevar.set('RÄTT')
-        self.nameentry.select_range(0,END)
+        self.nameentry.select_range(0, END)
         self.nameentry.focus_set()
         self.nameentry.config(style='NORMAL.TEntry')
-        self.name_wins.append(self.extract_name_from_path(self.image_paths[self.current_image_index]))
+        if self.image_paths[self.current_image_index] not in self.name_fails:
+            self.name_wins.append(self.image_paths[self.current_image_index])
+        time.sleep(0.5)
         self.diplay_next_image()
 
     def game_over(self):
-        pass
+        StatWin(self)
 
     def restart_game(self):
         pass
+
 
 if __name__ == '__main__':
     mw = MainWin()
