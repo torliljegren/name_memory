@@ -2,7 +2,7 @@ import time
 import random
 from glob import glob
 from tkinter.filedialog import askdirectory
-from tkinter.messagebox import showerror
+from tkinter.messagebox import showerror, showinfo
 from PIL import Image, ImageTk, ImageOps
 from tkinter import Tk, LEFT, RIGHT, BOTTOM, StringVar, END
 from tkinter.ttk import Frame, Label, Button, Style, Entry
@@ -11,6 +11,7 @@ from tkinter.ttk import Frame, Label, Button, Style, Entry
 class MainWin(object):
     def __init__(self):
         self.win = Tk()
+        self.win.title('Gissa namn')
 
         # CONSTANTS
         self.IMAGE_SIZE = (500, 500)
@@ -63,6 +64,10 @@ class MainWin(object):
         self.imagelabel.config(image=self.photoimage)
 
     def diplay_next_image(self):
+        if self.current_image_index >= len(self.image_paths)-1:
+            showinfo('Klar', 'Nu har du gissat klart.')
+            return
+
         try:
             self.img = Image.open(self.image_paths[self.current_image_index+1])
         except FileNotFoundError:
