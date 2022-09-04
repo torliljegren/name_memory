@@ -148,6 +148,7 @@ class MainWin(object):
     def name_fail(self):
         self.namevar.set(self.extract_name_from_path(self.image_paths[self.current_image_index]))
         self.nameentry.select_range(0, END)
+        self.nameentry.icursor(END)
         self.nameentry.focus_set()
         # self.nameentry.config(style='WRONG.TEntry')
         self.name_fails.append(self.image_paths[self.current_image_index])

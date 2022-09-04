@@ -22,7 +22,7 @@ class ScrolledWindow(ttk.Frame):
     """
 
 
-    def __init__(self, parent, canv_w = 400, canv_h = 400, *args, **kwargs):
+    def __init__(self, parent, canv_w = 400, canv_h = 600, *args, **kwargs):
         """Parent = master of scrolled window
         canv_w - width of canvas
         canv_h - height of canvas
@@ -45,8 +45,8 @@ class ScrolledWindow(ttk.Frame):
         # placing a canvas into frame
         self.canv.grid(column = 0, row = 0, sticky = 'nsew')
         # accociating scrollbar comands to canvas scroling
-        self.xscrlbr.config(command = self.canv.xview)
-        self.yscrlbr.config(command = self.canv.yview)
+        self.xscrlbr.config(command=self.canv.xview)
+        self.yscrlbr.config(command=self.canv.yview)
 
         # creating a frame to inserto to canvas
         self.scrollwindow = ttk.Frame(self.parent)
