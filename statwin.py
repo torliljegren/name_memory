@@ -1,5 +1,5 @@
 from tkinter import Toplevel
-from tkinter.ttk import Label
+from tkinter.ttk import Label, Button
 from PIL import Image, ImageTk, ImageOps
 from ttk_scroll import ScrollFrame
 
@@ -42,6 +42,13 @@ class StatWin(object):
             nlbl = Label(master=self.statframe.viewPort,
                          text=self.mainwin.extract_name_from_path(self.mainwin.name_fails[i]))
             nlbl.grid(row=i+1, column=3)
+
+        # add a button to retry failed names
+        if len(self.mainwin.name_fails) > 0:
+            againbutton = Button(master=self.statframe.viewPort, text='Försök igen',
+                                 command=lambda: self.mainwin.open_image_dir(self.mainwin.image_directory_path,
+                                                                         [path for path in self.mainwin.name_fails]))
+            againbutton.grid(row=len(self.mainwin.name_fails)+1, column=2)
 
         self.statframe.pack(side='top', fill='both', expand=True)
 

@@ -90,19 +90,24 @@ class MainWin(object):
         self.update_statlabel()
 
 
-    def open_image_dir(self, imgdir: str = None):
+    def open_image_dir(self, imgdir: str=None, imgpaths: tuple[str]=None):
         if self.statwin is not None:
             self.statwin.win.destroy()
             self.statwin = None
 
-        if imgdir is None:
+        if imgdir is None and imgpaths is None:
             imgdir = askdirectory()
 
         if imgdir is not None and imgdir != "" and imgdir != ():
             print(f'Setting image directory to {imgdir}')
+            self.name_wins.clear()
+            self.name_fails.clear()
             self.image_directory_path = imgdir
             self.current_image_index = 0
-            self.prepare_image_paths()
+            if imgpaths is None:
+                self.prepare_image_paths()
+            else:
+                self.image_paths = list(imgpaths)
             self.update_statlabel()
             # display the first image
             self.img = Image.open(self.image_paths[0])
@@ -116,7 +121,7 @@ class MainWin(object):
             showerror(title='Fel', message='Ingen mapp är vald.')
             return
 
-        print('Searching for ' + self.image_directory_path + '/*.jpg')
+        # print('Searching for ' + self.image_directory_path + '/*.jpg')
         imgpaths = glob(self.image_directory_path + '/*.jpg') + glob(self.image_directory_path + '/*.jpeg')
         print('Found images:')
         for imgp in imgpaths:
@@ -185,7 +190,7 @@ class MainWin(object):
         self.submitbuttonvar.set('Omstart')
         self.submitbutton.config(command=self.restart_game)
 
-    def restart_game(self):
+    def restart_game(self, imgpaths=None):
         if self.statwin is not None:
             self.statwin.win.destroy()
             self.statwin = None
@@ -196,7 +201,7 @@ class MainWin(object):
         self.name_wins.clear()
         self.name_fails.clear()
         self.current_image_index = 0
-        self.open_image_dir(self.image_directory_path)
+        self.open_image_dir(self.image_directory_path, imgpaths)
 
 
 if __name__ == '__main__':
