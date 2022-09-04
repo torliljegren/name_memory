@@ -1,7 +1,7 @@
 from tkinter import Toplevel
-from tkinter.ttk import Frame, Label, Button
+from tkinter.ttk import Label
 from PIL import Image, ImageTk, ImageOps
-from scrollframe import VerticalScrolledFrame
+from ttk_scroll import ScrollFrame
 
 
 class StatWin(object):
@@ -13,30 +13,54 @@ class StatWin(object):
         self.THUMB_SIZE = (100, 100)
         self.COLUMN_PADX = (0, 40)
 
-        self.statframe = VerticalScrolledFrame(parent=self.win)
+        self.statframe = ScrollFrame(self.win)
 
-        Label(master=self.statframe.interior, text=f'Avklarade ({len(self.mainwin.name_wins)} st)').grid(row=0, column=0)
-        Label(master=self.statframe.interior, text=f'Missade ({len(self.mainwin.name_fails)} st)').grid(row=0, column=2)
+        Label(master=self.statframe.viewPort, text=f'Avklarade ({len(self.mainwin.name_wins)} st)').grid(row=0,
+                                                                                                         column=0)
+        Label(master=self.statframe.viewPort, text=f'Missade ({len(self.mainwin.name_fails)} st)').grid(row=0,
+                                                                                                        column=2)
 
         # a column with names entered correct
         for i in range(len(self.mainwin.name_wins)):
             img = Image.open(self.mainwin.name_wins[i])
             photoimg = ImageTk.PhotoImage(ImageOps.contain(img, self.THUMB_SIZE))
-            lbl = Label(master=self.statframe.interior, image=photoimg)
+            lbl = Label(master=self.statframe.viewPort, image=photoimg)
             lbl.photoimage = photoimg
             lbl.grid(row=i+1, column=0)
-            nlbl = Label(master=self.statframe.interior, text=self.mainwin.extract_name_from_path(self.mainwin.name_wins[i]))
+            nlbl = Label(master=self.statframe.viewPort,
+                         text=self.mainwin.extract_name_from_path(self.mainwin.name_wins[i]))
             nlbl.grid(row=i+1, column=1, padx=self.COLUMN_PADX)
 
         # a column with names entered incorrect
         for i in range(len(self.mainwin.name_fails)):
             img = Image.open(self.mainwin.name_fails[i])
             photoimg = ImageTk.PhotoImage(ImageOps.contain(img, self.THUMB_SIZE))
-            lbl = Label(master=self.statframe.interior, image=photoimg)
+            lbl = Label(master=self.statframe.viewPort, image=photoimg)
             lbl.photoimage = photoimg
             lbl.grid(row=i+1, column=2)
-            nlbl = Label(master=self.statframe.interior, text=self.mainwin.extract_name_from_path(self.mainwin.name_fails[i]))
+            nlbl = Label(master=self.statframe.viewPort,
+                         text=self.mainwin.extract_name_from_path(self.mainwin.name_fails[i]))
             nlbl.grid(row=i+1, column=3)
 
-        self.statframe.pack()
-        self.statframe.interior.config(height=800)
+        self.statframe.pack(side='top', fill='both', expand=True)
+
+        self.win.update()
+        mh = self.minheight()
+        print(f'minheight={mh}')
+        self.win.geometry(f'{self.win.winfo_width()}x{mh}')
+        print(self.win.winfo_geometry())
+
+    def minheight(self) -> int:
+        # find the column with the most images
+        wins = len(self.mainwin.name_wins)
+        fails = len(self.mainwin.name_fails)
+
+        # calculate approx height of a fifth of the images
+        imgheight = (wins if wins > fails else fails) * 120
+
+        halfscreen = self.win.winfo_screenheight() / 2
+
+        # return the smallest of them
+        return int(imgheight if imgheight < halfscreen else halfscreen)
+
+

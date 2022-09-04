@@ -1,11 +1,10 @@
 import random
-import time
 from glob import glob
 from tkinter.filedialog import askdirectory
-from tkinter.messagebox import showerror, showinfo
+from tkinter.messagebox import showerror
 from PIL import Image, ImageTk, ImageOps
 from tkinter import Tk, LEFT, RIGHT, BOTTOM, StringVar, END
-from tkinter.ttk import Frame, Label, Button, Style, Entry
+from tkinter.ttk import Frame, Label, Button, Entry
 from statwin import StatWin
 
 
@@ -13,6 +12,9 @@ class MainWin(object):
     def __init__(self):
         self.win = Tk()
         self.win.title('Gissa namn')
+
+        # will be instanciated when calling game_over()
+        self.statwin: StatWin = None
 
         # CONSTANTS
         self.IMAGE_SIZE = (500, 500)
@@ -36,9 +38,10 @@ class MainWin(object):
         self.buttonframe: Frame = Frame(self.mainframe)
         self.buttonframe.pack()
         self.openbutton: Button = Button(master=self.buttonframe, text='Öppna', command=self.open_image_dir)
-        self.openbutton.pack(side=LEFT)
+        self.openbutton.pack(side=LEFT, padx=(0, 10))
         self.submitbuttonvar = StringVar(master=self.win, value='Klar')
-        self.submitbutton: Button = Button(master=self.buttonframe, textvariable=self.submitbuttonvar, command=self.ok_action)
+        self.submitbutton: Button = Button(master=self.buttonframe, textvariable=self.submitbuttonvar,
+                                           command=self.ok_action)
         self.submitbutton.pack(side=RIGHT)
         self.win.bind('<Return>', lambda e: self.ok_action())
 
@@ -82,7 +85,11 @@ class MainWin(object):
         self.imagelabel.config(image=self.photoimage)
 
 
-    def open_image_dir(self, imgdir=None):
+    def open_image_dir(self, imgdir: str = None):
+        if self.statwin is not None:
+            self.statwin.win.destroy()
+            self.statwin = None
+
         if imgdir is None:
             imgdir = askdirectory()
 
@@ -164,10 +171,21 @@ class MainWin(object):
         self.diplay_next_image()
 
     def game_over(self):
-        StatWin(self)
+        self.statwin = StatWin(self)
+        self.submitbuttonvar.set('Omstart')
+        self.submitbutton.config(command=self.restart_game)
 
     def restart_game(self):
-        pass
+        if self.statwin is not None:
+            self.statwin.win.destroy()
+            self.statwin = None
+
+        self.submitbuttonvar.set('Klar')
+        self.submitbutton.config(command=self.ok_action)
+        self.name_wins.clear()
+        self.name_fails.clear()
+        self.current_image_index = 0
+        self.open_image_dir(self.image_directory_path)
 
 
 if __name__ == '__main__':
