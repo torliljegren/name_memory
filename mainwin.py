@@ -37,7 +37,8 @@ class MainWin(object):
         self.buttonframe.pack()
         self.openbutton: Button = Button(master=self.buttonframe, text='Öppna', command=self.open_image_dir)
         self.openbutton.pack(side=LEFT)
-        self.submitbutton: Button = Button(master=self.buttonframe, text='Klar', command=self.ok_action)
+        self.submitbuttonvar = StringVar(master=self.win, value='Klar')
+        self.submitbutton: Button = Button(master=self.buttonframe, textvariable=self.submitbuttonvar, command=self.ok_action)
         self.submitbutton.pack(side=RIGHT)
         self.win.bind('<Return>', lambda e: self.ok_action())
 
