@@ -9,6 +9,7 @@ class StatWin(object):
     def __init__(self, mainwin):
         self.mainwin = mainwin
         self.win = Toplevel(master=self.mainwin.win)
+        self.win.title('Översikt')
 
         self.THUMB_SIZE = (100, 100)
         self.COLUMN_PADX = (0, 40)
@@ -55,8 +56,8 @@ class StatWin(object):
         wins = len(self.mainwin.name_wins)
         fails = len(self.mainwin.name_fails)
 
-        # calculate approx height of a fifth of the images
-        imgheight = (wins if wins > fails else fails) * 120
+        # calculate approx height of the images
+        imgheight = (wins if wins > fails else fails) * 110
 
         halfscreen = self.win.winfo_screenheight() / 2
 

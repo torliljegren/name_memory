@@ -42,8 +42,12 @@ class MainWin(object):
         self.submitbuttonvar = StringVar(master=self.win, value='Klar')
         self.submitbutton: Button = Button(master=self.buttonframe, textvariable=self.submitbuttonvar,
                                            command=self.ok_action)
-        self.submitbutton.pack(side=RIGHT)
+        self.submitbutton.pack(side=LEFT)
         self.win.bind('<Return>', lambda e: self.ok_action())
+        self.statvar = StringVar(master=self.win, value='0 av 0')
+        self.statlabel = Label(master=self.buttonframe, textvariable=self.statvar)
+        self.statlabel.pack(side=RIGHT, padx=(20,0), anchor='e')
+
 
         # init the frame containing the image
         self.imageframe: Frame = Frame(self.mainframe)
@@ -83,6 +87,7 @@ class MainWin(object):
         self.current_image_index += 1
         self.photoimage = ImageTk.PhotoImage(image=self.img)
         self.imagelabel.config(image=self.photoimage)
+        self.update_statlabel()
 
 
     def open_image_dir(self, imgdir: str = None):
@@ -93,11 +98,12 @@ class MainWin(object):
         if imgdir is None:
             imgdir = askdirectory()
 
-        if imgdir is not None and imgdir != "":
+        if imgdir is not None and imgdir != "" and imgdir != ():
             print(f'Setting image directory to {imgdir}')
             self.image_directory_path = imgdir
             self.current_image_index = 0
             self.prepare_image_paths()
+            self.update_statlabel()
             # display the first image
             self.img = Image.open(self.image_paths[0])
             self.photoimage = ImageTk.PhotoImage(self.img)
@@ -108,6 +114,7 @@ class MainWin(object):
     def prepare_image_paths(self):
         if self.image_directory_path == "":
             showerror(title='Fel', message='Ingen mapp är vald.')
+            return
 
         print('Searching for ' + self.image_directory_path + '/*.jpg')
         imgpaths = glob(self.image_directory_path + '/*.jpg') + glob(self.image_directory_path + '/*.jpeg')
@@ -149,6 +156,9 @@ class MainWin(object):
     def current_correct_name(self) -> str:
         return self.extract_name_from_path(self.image_paths[self.current_image_index])
 
+    def update_statlabel(self):
+        self.statvar.set(f'{self.current_image_index + 1 } av {len(self.image_paths)}')
+
     def verify_name(self) -> bool:
         return self.namevar.get().lower() == \
                self.extract_name_from_path(self.image_paths[self.current_image_index]).lower()
@@ -180,6 +190,7 @@ class MainWin(object):
             self.statwin.win.destroy()
             self.statwin = None
 
+        self.update_statlabel()
         self.submitbuttonvar.set('Klar')
         self.submitbutton.config(command=self.ok_action)
         self.name_wins.clear()
