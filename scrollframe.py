@@ -34,6 +34,7 @@ class VerticalScrolledFrame(ttk.Frame):
 
         # Create a frame inside the canvas which will be scrolled with it.
         self.interior = interior = ttk.Frame(canvas)
+
         interior_id = canvas.create_window(0, 0, window=interior,
                                            anchor=NW)
 
@@ -46,7 +47,7 @@ class VerticalScrolledFrame(ttk.Frame):
             if interior.winfo_reqwidth() != canvas.winfo_width():
                 # Update the canvas's width to fit the inner frame.
                 canvas.config(width=interior.winfo_reqwidth())
-        interior.bind('<Configure>', _configure_interior)
+
 
         def _configure_canvas(event):
             if interior.winfo_reqwidth() != canvas.winfo_width():

@@ -146,22 +146,19 @@ class MainWin(object):
                self.extract_name_from_path(self.image_paths[self.current_image_index]).lower()
 
     def name_fail(self):
-        self.namevar.set('FEL')
-        time.sleep(0.5)
         self.namevar.set(self.extract_name_from_path(self.image_paths[self.current_image_index]))
         self.nameentry.select_range(0, END)
         self.nameentry.focus_set()
-        self.nameentry.config(style='WRONG.TEntry')
+        # self.nameentry.config(style='WRONG.TEntry')
         self.name_fails.append(self.image_paths[self.current_image_index])
 
     def name_win(self):
-        self.namevar.set('RÄTT')
-        self.nameentry.select_range(0, END)
+        self.namevar.set('')
         self.nameentry.focus_set()
-        self.nameentry.config(style='NORMAL.TEntry')
+        # self.nameentry.config(style='NORMAL.TEntry')
+        # only add to correct guesses if first guess was correct
         if self.image_paths[self.current_image_index] not in self.name_fails:
             self.name_wins.append(self.image_paths[self.current_image_index])
-        time.sleep(0.5)
         self.diplay_next_image()
 
     def game_over(self):
