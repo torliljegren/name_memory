@@ -1,4 +1,5 @@
 import random
+import platform
 from glob import glob
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showerror
@@ -121,8 +122,12 @@ class MainWin(object):
             showerror(title='Fel', message='Ingen mapp är vald.')
             return
 
+        # path_separator = '\\' if platform.system() == 'Windows' else '/'
+        path_separator = '/'
         # print('Searching for ' + self.image_directory_path + '/*.jpg')
-        imgpaths = glob(self.image_directory_path + '/*.jpg') + glob(self.image_directory_path + '/*.jpeg')
+        imgpaths = glob(self.image_directory_path + path_separator + '*.jpg') + \
+                   glob(self.image_directory_path + path_separator + '*.jpeg')
+        print(f'Platform: {platform.system()}, separator: {path_separator}')
         print('Found images:')
         for imgp in imgpaths:
             print(f'{imgp}   with name: {self.extract_name_from_path(imgp)}')
@@ -134,10 +139,12 @@ class MainWin(object):
             self.image_paths = imgpaths
 
     def extract_name_from_path(self, imgpath: str):
+        if '\\' in imgpath:
+            imgpath = imgpath.replace('\\', '/')
+
+
         if '/' in imgpath:
             return imgpath.split('/')[-1].split('.')[0].split(' ')[0]
-        elif '\\' in imgpath:
-            return imgpath.split('\\')[-1].split('.')[0].split(' ')[0]
         else:
             return imgpath.split('.')[0]
 
