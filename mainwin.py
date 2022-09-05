@@ -17,14 +17,7 @@ class MainWin(object):
         # will be instanciated when calling game_over()
         self.statwin: StatWin = None
 
-        # CONSTANTS
         self.IMAGE_SIZE = (500, 500)
-
-        # self.NORMAL_STYLE = Style(master=self.win)
-        # self.NORMAL_STYLE.configure('NORMAL.TEntry', bg='white', fg='black')
-
-        # self.WRONG_STYLE = Style(self.win)
-        # self.WRONG_STYLE.configure('WRONG.TEntry', bg='orange', fg='white')
 
         self.name_fails: list[str] = []
         self.name_wins: list[str] = []
@@ -39,7 +32,7 @@ class MainWin(object):
         self.buttonframe: Frame = Frame(self.mainframe)
         self.buttonframe.pack()
         self.openbutton: Button = Button(master=self.buttonframe, text='Öppna', command=self.open_image_dir)
-        self.openbutton.pack(side=LEFT, padx=(0, 10))
+        self.openbutton.pack(side=LEFT, anchor='w', padx=(0, 10))
         self.submitbuttonvar = StringVar(master=self.win, value='Klar')
         self.submitbutton: Button = Button(master=self.buttonframe, textvariable=self.submitbuttonvar,
                                            command=self.ok_action)
@@ -115,6 +108,7 @@ class MainWin(object):
             self.photoimage = ImageTk.PhotoImage(self.img)
             self.imagelabel.config(image=self.photoimage)
             self.namevar.set('')
+            self.nameentry.config(state='normal')
             self.nameentry.focus_set()
 
     def prepare_image_paths(self):
@@ -193,6 +187,7 @@ class MainWin(object):
         self.diplay_next_image()
 
     def game_over(self):
+        self.nameentry.config(state='disabled')
         self.statwin = StatWin(self)
         self.submitbuttonvar.set('Omstart')
         self.submitbutton.config(command=self.restart_game)
@@ -202,6 +197,7 @@ class MainWin(object):
             self.statwin.win.destroy()
             self.statwin = None
 
+        self.nameentry.config(state='normal')
         self.update_statlabel()
         self.submitbuttonvar.set('Klar')
         self.submitbutton.config(command=self.ok_action)
