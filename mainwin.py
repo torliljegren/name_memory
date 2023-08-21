@@ -74,6 +74,11 @@ class MainWin(object):
 
         try:
             self.img = Image.open(self.image_paths[self.current_image_index+1])
+            if self.img.height > 900:
+                resizefactor = 900 / self.img.height
+                h = round(resizefactor * self.img.height)
+                w = round(resizefactor * self.img.width)
+                self.img = self.img.resize((w, h))
         except FileNotFoundError:
             self.display_default_image()
             return
@@ -89,6 +94,7 @@ class MainWin(object):
             self.statwin.win.destroy()
             self.statwin = None
 
+        # ask to open a dir if none is given
         if imgdir is None and imgpaths is None:
             imgdir = askdirectory()
 
@@ -105,6 +111,11 @@ class MainWin(object):
             self.update_statlabel()
             # display the first image
             self.img = Image.open(self.image_paths[0])
+            if self.img.height > 900:
+                resizefactor = 900 / self.img.height
+                h = round(resizefactor * self.img.height)
+                w = round(resizefactor * self.img.width)
+                self.img = self.img.resize((w, h))
             self.photoimage = ImageTk.PhotoImage(self.img)
             self.imagelabel.config(image=self.photoimage)
             self.namevar.set('')
@@ -150,8 +161,8 @@ class MainWin(object):
             print('Text entry is empty')
             return
 
-        print('Verifying name')
-        print(f'Correct name: {self.current_correct_name()}  Guess: {self.namevar.get()}')
+        # print('Verifying name')
+        # print(f'Correct name: {self.current_correct_name()}  Guess: {self.namevar.get()}')
         if self.verify_name():
             print('Correct guess')
             self.name_win()
