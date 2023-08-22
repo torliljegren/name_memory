@@ -74,8 +74,8 @@ class MainWin(object):
 
         try:
             self.img = Image.open(self.image_paths[self.current_image_index+1])
-            if self.img.height > 900:
-                resizefactor = 900 / self.img.height
+            if self.img.height > self.IMAGE_SIZE[0]:
+                resizefactor = self.IMAGE_SIZE[0] / self.img.height
                 h = round(resizefactor * self.img.height)
                 w = round(resizefactor * self.img.width)
                 self.img = self.img.resize((w, h))
@@ -111,8 +111,8 @@ class MainWin(object):
             self.update_statlabel()
             # display the first image
             self.img = Image.open(self.image_paths[0])
-            if self.img.height > 900:
-                resizefactor = 900 / self.img.height
+            if self.img.height > self.IMAGE_SIZE[0]:
+                resizefactor = self.IMAGE_SIZE[0] / self.img.height
                 h = round(resizefactor * self.img.height)
                 w = round(resizefactor * self.img.width)
                 self.img = self.img.resize((w, h))
